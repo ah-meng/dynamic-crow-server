@@ -32,9 +32,3 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_B_ENDPOINT)
     endif ()
 endif ()
-
-if (WIN32)
-
-else ()
-    target_link_libraries(${PROJECT_NAME} PRIVATE dl)
-endif ()

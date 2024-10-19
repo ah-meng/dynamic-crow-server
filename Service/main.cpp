@@ -1,24 +1,6 @@
 #include <iostream>
-#include "crow.h"
 
 #ifdef DEBUG
-
-#else
-
-#include "filesystem"
-
-#endif
-
-
-#ifdef _WIN32
-#include <Windows.h>
-
-#else
-
-#include <dlfcn.h>
-
-#endif
-
 
 #ifdef ENABLE_A_ENDPOINT
 
@@ -31,71 +13,88 @@
 #include "b.h"
 
 #endif
-
-namespace fs = std::filesystem;
-
-void load_and_register(const std::string& library_path, crow::SimpleApp& app) {
-#ifdef _WIN32
-    HMODULE handle = LoadLibrary(library_path.c_str());
-        if (!handle) {
-            std::cerr << "Failed to load " << library_path << std::endl;
-            return;
-        }
-        auto register_route = (void(*)(crow::SimpleApp&))GetProcAddress(handle, "register_routes");
 #else
-    void* handle = dlopen(library_path.c_str(), RTLD_LAZY);
-    if (!handle) {
-        std::cerr << "Failed to load " << library_path << std::endl;
-        return;
-    }
-    auto register_route = (void (*)(crow::SimpleApp&)) dlsym(handle, "register_routes");
+
+#include "filesystem"
 
 #endif
 
-    if (register_route) {
-        register_route(app);
-    } else {
-        std::cerr << "Failed to find register_routes in " << library_path << std::endl;
+#include <DynamicLoader.h>
+
+#include "CrowHttpServer.h"
+#include "IEndpointProvider.h"
+
+//TEMP, Test
+std::vector<std::unique_ptr<IEndpointProvider, std::function<void(IEndpointProvider*)> > > obj_vector;
+namespace fs = std::filesystem;
+
+void load_and_register(const std::string& library_path, IHttpServer& app) {
+    try {
+        auto loader = std::make_shared<DynamicLoader>(library_path);
+        const auto create_object = loader->LoadFunctions<IEndpointProvider* (*)()>("create_object");
+        const auto delete_object = loader->LoadFunctions<void (*)(IEndpointProvider*)>("delete_object");
+
+        if (!create_object) {
+            std::cerr << "Failed to find create_object in " << library_path << std::endl;
+            throw std::runtime_error("create_object");
+        }
+        if (!delete_object) {
+            std::cerr << "Failed to find delete_object in " << library_path << std::endl;
+            throw std::runtime_error("delete_object");
+        }
+
+        //loader 캡쳐 필수!! shared_ptr 의 참조 카운트 및 플러그인 객체가 소멸될 때까지 loader객체의 생존을 위함
+        auto custom_deleter = [delete_object, loader](IEndpointProvider* obj) {
+            delete_object(obj);
+            std::cout << "custom_deleter" << std::endl;
+        };
+        std::unique_ptr<IEndpointProvider, std::function<void(IEndpointProvider*)> > object(
+            create_object(), custom_deleter);
+        object->addEndpoint(app);
+        obj_vector.push_back(std::move(object));
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
     }
 }
 
-void load_plugins(crow::SimpleApp& app) {
+std::vector<std::string> get_plugins(const std::string& plugin_path) {
+    std::vector<std::string> plugins;
+    for (const auto& entry: fs::directory_iterator(plugin_path)) {
+        std::string path = entry.path().string();
+        if (path.find(".dll") != std::string::npos || path.find(".so") != std::string::npos) {
+            plugins.push_back(path);
+        }
+    }
+    return plugins;
+}
+
+void load_plugins(IHttpServer& app) {
 #ifdef DEBUG
 #ifdef ENABLE_A_ENDPOINT
-    register_a(app);
+    A a;
+    a.addEndpoint(app);
 #endif
 
 #ifdef ENABLE_B_ENDPOINT
-    register_b(app);
+    B b;
+    b.addEndpoint(app);
 #endif
 
 #else
-    std::string plugin_dir = "./plugins";
+    const std::string plugin_dir = "./plugins";
     // 릴리즈 모드에서는 DLL 동적 로딩
-    for (const auto& entry: fs::directory_iterator(plugin_dir)) {
-        std::string path = entry.path().string();
-        if (path.find(".dll") != std::string::npos || path.find(".so") != std::string::npos) {
-            load_and_register(path, app);
-        }
-    }
+    for (const auto& plugin: get_plugins(plugin_dir))
+        load_and_register(plugin, app);
 #endif
 }
 
 int main() {
-
-    crow::SimpleApp app;
-
-    CROW_ROUTE(app, "/t").methods(crow::HTTPMethod::Get)([](const crow::request& request) -> crow::response {
-        return {200, ""};
+    const std::unique_ptr<IHttpServer> server = std::make_unique<CrowHttpServer>();
+    server->addEndpoint(HttpMethod::Get, "/t", [] {
+        return "test";
     });
-    std::cout << "Hello, World!" << std::endl;
 
-    load_plugins(app);
-
-#ifdef DEBUGGG
-    std::cout << "" << std::endl;
-#endif
-
-    app.port(3000).run();
+    load_plugins(*server);
+    server->start(3000);
     return 0;
 }
