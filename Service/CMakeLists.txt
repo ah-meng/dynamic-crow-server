@@ -5,9 +5,17 @@ find_package(Threads REQUIRED)
 
 add_executable(${PROJECT_NAME})
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include /opt/homebrew/include)
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        /opt/homebrew/include
+)
 
-target_sources(${PROJECT_NAME} PRIVATE main.cpp)
+target_sources(${PROJECT_NAME} PRIVATE
+        main.cpp
+        src/CrowHttpServer.cpp
+)
+
 # 스레드 라이브러리 링크
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 target_link_libraries(${PROJECT_NAME} PRIVATE Common Util)
