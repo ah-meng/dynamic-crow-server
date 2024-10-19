@@ -11,6 +11,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(DEBUG TRUE)
 endif ()
 
+add_subdirectory(Common)
 add_subdirectory(Service)
 
 if (ENABLE_A_ENDPOINT)
