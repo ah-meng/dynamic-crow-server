@@ -5,8 +5,12 @@
 #ifndef DYNAMIC_SERVER_A_H
 #define DYNAMIC_SERVER_A_H
 
-#include "crow.h"
+#include "IEndpointProvider.h"
+#include "IHttpServer.h"
 
-void register_a(crow::SimpleApp& app);
+class A final : public IEndpointProvider {
+public:
+    void addEndpoint(IHttpServer& server) const override;
+};
 
 #endif //DYNAMIC_SERVER_A_H
