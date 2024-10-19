@@ -71,13 +71,21 @@ std::vector<std::string> get_plugins(const std::string& plugin_path) {
 void load_plugins(IHttpServer& app) {
 #ifdef DEBUG
 #ifdef ENABLE_A_ENDPOINT
-    A a;
-    a.addEndpoint(app);
+    std::unique_ptr<IEndpointProvider, std::function<void(IEndpointProvider*)> > a(new A(), [](IEndpointProvider* obj) {
+        delete obj;
+    });
+    a->addEndpoint(app);
+
+    obj_vector.push_back(std::move(a));
 #endif
 
 #ifdef ENABLE_B_ENDPOINT
-    B b;
-    b.addEndpoint(app);
+    std::unique_ptr<IEndpointProvider, std::function<void(IEndpointProvider*)> > b(new B(), [](IEndpointProvider* obj) {
+            delete obj;
+        });
+    b->addEndpoint(app);
+
+    obj_vector.push_back(std::move(b));
 #endif
 
 #else
