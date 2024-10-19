@@ -8,7 +8,6 @@ option(ENABLE_B_ENDPOINT "Enable B endpoint" ON)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(DEBUG)
-    set(DEBUG TRUE)
 endif ()
 
 add_subdirectory(Common)
