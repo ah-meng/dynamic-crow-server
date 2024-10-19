@@ -7,6 +7,7 @@
 #include <string>
 
 #ifdef _WIN32
+#include <libloaderapi.h>
 #else
 #include <dlfcn.h>
 #endif
@@ -29,7 +30,7 @@ private:
 template<typename T>
 T DynamicLoader::LoadFunctions(const std::string& functionName) {
 #ifdef _WIN32
-    T func = reinterpret_cast<T>(GetProcAddress((HMODULE)handle, functionName.c_str()));
+    T func = reinterpret_cast<T>(GetProcAddress((HMODULE) handle, functionName.c_str()));
 #else
     T func = reinterpret_cast<T>(dlsym(handle, functionName.c_str()));
 #endif
