@@ -10,6 +10,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include /o
 target_sources(${PROJECT_NAME} PRIVATE main.cpp)
 # 스레드 라이브러리 링크
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE Common Util)
 
 # 디버그로 빌드하는 경우, 사용하는 프로젝트를 정적으로 추가하여 빌드
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
