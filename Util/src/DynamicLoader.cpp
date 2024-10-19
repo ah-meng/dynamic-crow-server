@@ -3,10 +3,6 @@
 //
 
 #include "DynamicLoader.h"
-#ifdef _WIN32
-#else
-#include <dlfcn.h>
-#endif
 
 DynamicLoader::DynamicLoader(const std::string& path) {
 #ifdef _WIN32
