@@ -6,7 +6,6 @@ find_package(Threads REQUIRED)
 add_executable(${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-        ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         /opt/homebrew/include
 )
