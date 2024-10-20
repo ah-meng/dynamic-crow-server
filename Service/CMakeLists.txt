@@ -5,7 +5,7 @@ find_package(Threads REQUIRED)
 
 add_executable(${PROJECT_NAME})
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/lib/asio.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/lib/crow.cmake)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
