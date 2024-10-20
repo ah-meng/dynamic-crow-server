@@ -6,11 +6,15 @@
 
 CrowHttpServer::CrowHttpServer() = default;
 
-void CrowHttpServer::addEndpoint(HttpMethod method, std::string url, std::function<std::string()> handler) {
+void CrowHttpServer::addEndpoint(
+    const HttpMethod method,
+    const std::string url,
+    const std::function<std::string()> handler
+) {
     app.route_dynamic(url).methods(HttpMethodConverter(method))(handler);
 }
 
-crow::HTTPMethod CrowHttpServer::HttpMethodConverter(HttpMethod method) {
+crow::HTTPMethod CrowHttpServer::HttpMethodConverter(const HttpMethod method) {
     switch (method) {
         case HttpMethod::Get:
             return crow::HTTPMethod::Get;
@@ -23,9 +27,9 @@ crow::HTTPMethod CrowHttpServer::HttpMethodConverter(HttpMethod method) {
         case HttpMethod::Patch:
             return crow::HTTPMethod::Patch;
     }
+    throw std::runtime_error("Invalid HttpMethod");
 }
 
-void CrowHttpServer::start(int port) {
+void CrowHttpServer::start(const int port) {
     app.port(port).run();
 }
-
