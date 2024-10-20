@@ -81,8 +81,8 @@ void load_plugins(IHttpServer& app) {
 
 #ifdef ENABLE_B_ENDPOINT
     std::unique_ptr<IEndpointProvider, std::function<void(IEndpointProvider*)> > b(new B(), [](IEndpointProvider* obj) {
-            delete obj;
-        });
+        delete obj;
+    });
     b->addEndpoint(app);
 
     obj_vector.push_back(std::move(b));
