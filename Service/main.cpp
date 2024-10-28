@@ -19,9 +19,9 @@
 
 #endif
 
-#include <DynamicLoader.h>
 
 #include "CrowHttpServer.h"
+#include <DynamicLoader.h>
 #include "IEndpointProvider.h"
 
 //TEMP, Test
